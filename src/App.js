@@ -25,8 +25,8 @@ class WebcamCapture extends React.Component {
 
   render() {
     const videoConstraints = {
-      width: 244,
-      height: 244,
+      width: 224,
+      height: 224,
       facingMode: "user"
     };
 
@@ -35,8 +35,8 @@ class WebcamCapture extends React.Component {
         <div>
           <Webcam
             audio={false}
-            height={244}
-            width={244}
+            height={224}
+            width={224}
             ref={this.setRef}
             screenshotFormat="image/jpeg"
             screenshotWidth={224} // no sense capturing images in a resolution higher than what resnet wants
@@ -66,7 +66,7 @@ class ClassifiedImage extends Component {
 
   render() {
     return (
-      <Card>
+      <Card style={{width: '224px'}}>
         <Image src={this.props.imageSrc} />
         <Card.Content>
           <Card.Header>
