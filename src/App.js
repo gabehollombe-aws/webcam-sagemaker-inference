@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, CardGroup, Form, Image, Input } from 'semantic-ui-react'
+import { Accordion, Card, CardGroup, Form, Image, Input } from 'semantic-ui-react'
 import Webcam from 'react-webcam';
 
 import Amplify, { API } from 'aws-amplify';
@@ -9,6 +9,10 @@ Amplify.configure(aws_exports);
 // argMax via https://gist.github.com/engelen/fbce4476c9e68c52ff7e5c2da5c24a28
 function argMax(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+}
+
+function zipArrays(a, b) {
+  return a.map((e, i) => [e, b[i]])
 }
 
 class WebcamCapture extends React.Component {
@@ -60,8 +64,25 @@ class ClassifiedImage extends Component {
   }
 
   async componentDidMount() {
-    const [classLabel, probability] = await this.props.classifier(this.props.imageSrc);
-    this.setState({ classLabel, probability })
+    const { classLabels, predictions, highestProbabilityIndex } = await this.props.classifier(this.props.imageSrc);
+    this.setState({ 
+      bestLabel: classLabels[highestProbabilityIndex],
+      bestLabelScore: predictions[highestProbabilityIndex],
+      allLabelsScores: zipArrays(classLabels, predictions),
+    })
+  }
+
+  accordionPanels = () => {
+    if (!this.state.allLabelsScores) return [];
+
+    const labelsAndScores = this.state.allLabelsScores.map(([label, score]) => 
+      <p>{label}: {score}</p>
+    )
+    return [{
+      key: 'labels-and-scores',
+      title: 'Show Score Details',
+      content: labelsAndScores
+    }]
   }
 
   render() {
@@ -70,11 +91,14 @@ class ClassifiedImage extends Component {
         <Image src={this.props.imageSrc} />
         <Card.Content>
           <Card.Header>
-            { this.state.classLabel ? this.state.classLabel : "Loading..." }
+            { this.state.bestLabel ? this.state.bestLabel : "Loading..." }
           </Card.Header>
           <Card.Meta>
-            { this.state.probability ? this.state.probability : "" }
+            { this.state.bestLabelScore ? this.state.bestLabelScore : "" }
           </Card.Meta>
+          <Card.Description>
+            <Accordion defaultActiveIndex={-1} panels={this.accordionPanels()} />
+          </Card.Description>
         </Card.Content>
       </Card>
     )
@@ -108,7 +132,9 @@ class App extends Component {
     const highestProbabilityIndex = argMax(predictions);
     const classLabels = [].concat(this.state.classLabels.split(' '));
     classLabels.sort();
-    return [classLabels[highestProbabilityIndex], predictions[highestProbabilityIndex]];
+    return {
+      classLabels, predictions, highestProbabilityIndex
+    }
   }
 
   classify = async (imageSrc) => {
@@ -124,9 +150,9 @@ class App extends Component {
       <div>
       <Form>
         <Form.Group widths='equal'>
-          <Form.Input label='Sagemaker Endpoint Name' placeholder='Sagemaker Endpoint Name' name='endpointName' onChange={this.handleChange} />
-          <Form.Input label='Sagemaker Endpoint Region' placeholder='Sagemaker Endpoint Region' name='endpointRegion' onChange={this.handleChange} />
-          <Form.Input label='Class Labels' placeholder='space delimited list of labels' name='classLabels' onChange={this.handleChange} />
+          <Form.Input label='Sagemaker Endpoint Name' placeholder='Sagemaker Endpoint Name' name='endpointName' onChange={this.handleChange} value={this.state.endpointName} />
+          <Form.Input label='Sagemaker Endpoint Region' placeholder='Sagemaker Endpoint Region' name='endpointRegion' onChange={this.handleChange} value={this.state.endpointRegion} />
+          <Form.Input label='Class Labels' placeholder='space delimited list of labels' name='classLabels' onChange={this.handleChange} value={this.state.classLabels} />
         </Form.Group>
 
         <Form.Group widths='equal'>
