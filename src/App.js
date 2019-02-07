@@ -21,18 +21,40 @@ function zipArrays(a, b) {
 function scaleImage(url, width, height, callback){
 	let img = new window.Image();
 
-	// When the images is loaded, resize it in canvas.
 	img.onload = function(){
 		var canvas = document.createElement("canvas"),
         ctx = canvas.getContext("2d");
 
         canvas.width = width;
-        canvas.height= height;
+        canvas.height = height;
 
-        // draw the img into canvas
-        ctx.drawImage(this, 0, 0, width, height);
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Run the callback on what to do with the canvas element.
+        // resize code via https://sdqali.in/blog/2013/10/03/fitting-an-image-in-to-a-canvas-object/
+        var imageAspectRatio = img.width / img.height;
+        var canvasAspectRatio = canvas.width / canvas.height;
+        var renderableHeight, renderableWidth, xStart, yStart;
+        if(imageAspectRatio < canvasAspectRatio) {
+          renderableHeight = canvas.height;
+          renderableWidth = img.width * (renderableHeight / img.height);
+          xStart = (canvas.width - renderableWidth) / 2;
+          yStart = 0;
+        }
+        else if(imageAspectRatio > canvasAspectRatio) {
+          renderableWidth = canvas.width
+          renderableHeight = img.height * (renderableWidth / img.width);
+          xStart = 0;
+          yStart = (canvas.height - renderableHeight) / 2;
+        }
+        else {
+          renderableHeight = canvas.height;
+          renderableWidth = canvas.width;
+          xStart = 0;
+          yStart = 0;
+        }
+        ctx.drawImage(img, xStart, yStart, renderableWidth, renderableHeight);
+
         callback(canvas);
 	};
 
@@ -144,7 +166,7 @@ class App extends Component {
   classifier = async (imageSrc) => {
     const base64Image = new Buffer(imageSrc.replace(/^data:image\/\w+;base64,/, ""), 'base64')
     const { predictions } = await API.post(
-      'api6342d95d',
+      aws_exports.aws_cloud_logic_custom[0].name,
       '/classify', 
       {
         body: {
