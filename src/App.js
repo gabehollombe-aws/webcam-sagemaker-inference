@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Accordion, Card, CardGroup, Form, Image, Input } from 'semantic-ui-react'
 import Webcam from 'react-webcam';
+import classNames from 'classnames'
+import Dropzone from 'react-dropzone'
 
 import Amplify, { API } from 'aws-amplify';
 import aws_exports from './aws-exports';
@@ -14,6 +16,29 @@ function argMax(array) {
 function zipArrays(a, b) {
   return a.map((e, i) => [e, b[i]])
 }
+
+// scaleImage via https://gist.github.com/MikeRogers0/6264546
+function scaleImage(url, width, height, callback){
+	let img = new window.Image();
+
+	// When the images is loaded, resize it in canvas.
+	img.onload = function(){
+		var canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d");
+
+        canvas.width = width;
+        canvas.height= height;
+
+        // draw the img into canvas
+        ctx.drawImage(this, 0, 0, width, height);
+
+        // Run the callback on what to do with the canvas element.
+        callback(canvas);
+	};
+
+  img.src = url;
+}
+
 
 class WebcamCapture extends React.Component {
   constructor(props) {
@@ -110,9 +135,9 @@ class App extends Component {
     super(props);
     this.state = {
       imageSrcs: [],
-      endpointName: '',
-      endpointRegion: '',
-      classLabels: '',
+      endpointName: 'sparrows-1549517188',
+      endpointRegion: 'us-west-2',
+      classLabels: 'fox house housefinch song',
     }
   }
 
@@ -145,6 +170,21 @@ class App extends Component {
 
   handleChange = (e) => this.setState({ [e.target.name]: e.target.value })
 
+  classifyScaled = (canvas) => {
+    this.classify(canvas.toDataURL())
+  }
+
+  onDrop = (acceptedFiles, rejectedFiles) => {
+    // Do something with files
+    acceptedFiles.forEach(f => {
+      var reader  = new FileReader();
+      reader.addEventListener("load", () => {
+        scaleImage(reader.result, 224, 224, this.classifyScaled)
+      }, false);
+      reader.readAsDataURL(f);
+    })
+  }
+
   render() {
     return (
       <div>
@@ -159,6 +199,24 @@ class App extends Component {
           <WebcamCapture onCapture={this.classify}/>
         </Form.Group>
       </Form>
+
+      <Dropzone onDrop={this.onDrop} accept={['image/jpg', 'image/jpeg', 'image/png']}>
+        {({getRootProps, getInputProps, isDragActive}) => {
+          return (
+            <div
+              {...getRootProps()}
+              className={classNames('dropzone', {'dropzone--isActive': isDragActive})}
+            >
+              <input {...getInputProps()} />
+              {
+                isDragActive ?
+                  <p>Drop files here...</p> :
+                  <p>Try dropping some files here, or click to select files to upload.</p>
+              }
+            </div>
+          )
+        }}
+      </Dropzone>
 
       <CardGroup>
         { this.state.imageSrcs.map((src, index) => <ClassifiedImage key={"img"+index} imageSrc={src} classifier={this.classifier} />) }
