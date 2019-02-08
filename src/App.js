@@ -168,9 +168,9 @@ class App extends Component {
     super(props);
     this.state = {
       imageSrcs: [],
-      endpointName: 'sparrows-1549527907',
+      endpointName: '',
       endpointRegion: 'us-west-2',
-      classLabels: 'fox-sparrow house-finch house-sparrow song-sparrow',
+      classLabels: '',
     }
   }
 
