@@ -8,6 +8,14 @@ import Amplify, { API } from 'aws-amplify';
 import aws_exports from './aws-exports';
 Amplify.configure(aws_exports);
 
+const styles = {
+  dropZone: {
+    width: '100%',
+    height: '200px',
+    border: '1px solid gray',
+  }
+}
+
 // argMax via https://gist.github.com/engelen/fbce4476c9e68c52ff7e5c2da5c24a28
 function argMax(array) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
@@ -157,9 +165,9 @@ class App extends Component {
     super(props);
     this.state = {
       imageSrcs: [],
-      endpointName: 'sparrows-1549517188',
+      endpointName: 'sparrows-1549527907',
       endpointRegion: 'us-west-2',
-      classLabels: 'fox house housefinch song',
+      classLabels: 'fox-sparrow house-finch house-sparrow song-sparrow',
     }
   }
 
@@ -225,15 +233,16 @@ class App extends Component {
       <Dropzone onDrop={this.onDrop} accept={['image/jpg', 'image/jpeg', 'image/png']}>
         {({getRootProps, getInputProps, isDragActive}) => {
           return (
-            <div
+            <div 
               {...getRootProps()}
+              style={styles.dropZone}
               className={classNames('dropzone', {'dropzone--isActive': isDragActive})}
             >
               <input {...getInputProps()} />
               {
                 isDragActive ?
                   <p>Drop files here...</p> :
-                  <p>Try dropping some files here, or click to select files to upload.</p>
+                  <p>You can drag and drop images from your computer here.</p>
               }
             </div>
           )
