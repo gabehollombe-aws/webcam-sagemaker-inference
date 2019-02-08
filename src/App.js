@@ -8,6 +8,9 @@ import Amplify, { API } from 'aws-amplify';
 import aws_exports from './aws-exports';
 Amplify.configure(aws_exports);
 
+const IMAGE_WIDTH = 224;
+const IMAGE_HEIGHT = 224;
+
 const styles = {
   dropZone: {
     width: '100%',
@@ -84,8 +87,8 @@ class WebcamCapture extends React.Component {
 
   render() {
     const videoConstraints = {
-      width: 224,
-      height: 224,
+      width: IMAGE_WIDTH,
+      height: IMAGE_HEIGHT,
       facingMode: "user"
     };
 
@@ -94,11 +97,11 @@ class WebcamCapture extends React.Component {
         <div>
           <Webcam
             audio={false}
-            height={224}
-            width={224}
+            height={IMAGE_HEIGHT}
+            width={IMAGE_WIDTH}
             ref={this.setRef}
             screenshotFormat="image/jpeg"
-            screenshotWidth={224} // no sense capturing images in a resolution higher than what resnet wants
+            screenshotWidth={IMAGE_WIDTH} // no sense capturing images in a resolution higher than what resnet wants
             videoConstraints={videoConstraints}
           />
         </div>
@@ -209,7 +212,7 @@ class App extends Component {
     acceptedFiles.forEach(f => {
       var reader  = new FileReader();
       reader.addEventListener("load", () => {
-        scaleImage(reader.result, 224, 224, this.classifyScaled)
+        scaleImage(reader.result, IMAGE_WIDTH, IMAGE_HEIGHT, this.classifyScaled)
       }, false);
       reader.readAsDataURL(f);
     })
