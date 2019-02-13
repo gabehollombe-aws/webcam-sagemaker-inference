@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Accordion, Card, CardGroup, Form, Image, Input } from 'semantic-ui-react'
+import { Accordion, Button, Card, CardGroup, Form, Image } from 'semantic-ui-react'
 import Webcam from 'react-webcam';
 import classNames from 'classnames'
 import Dropzone from 'react-dropzone'
@@ -16,6 +16,7 @@ const styles = {
     width: '100%',
     height: '200px',
     border: '1px solid gray',
+    margin: '10px 0',
   }
 }
 
@@ -218,6 +219,12 @@ class App extends Component {
     })
   }
 
+  handleClearImages = () => {
+    this.setState({
+      imageSrcs: []
+    })
+  }
+
   render() {
     return (
       <div>
@@ -245,12 +252,14 @@ class App extends Component {
               {
                 isDragActive ?
                   <p>Drop files here...</p> :
-                  <p>You can drag and drop images from your computer here.</p>
+                  <p>You can drag and drop images here or click to select images to upload.</p>
               }
             </div>
           )
         }}
       </Dropzone>
+
+      <Button onClick={this.handleClearImages}>Clear Images</Button>
 
       <CardGroup>
         { this.state.imageSrcs.map((src, index) => <ClassifiedImage key={"img"+index} imageSrc={src} classifier={this.classifier} />) }
