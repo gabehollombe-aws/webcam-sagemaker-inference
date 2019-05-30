@@ -124,10 +124,12 @@ class ClassifiedImage extends Component {
 
   async componentDidMount() {
     const { classLabels, predictions, highestProbabilityIndex } = await this.props.classifier(this.props.imageSrc);
+    let sortedClassLabels = classLabels.splice(0)
+    sortedClassLabels.sort()
     this.setState({ 
-      bestLabel: classLabels[highestProbabilityIndex],
+      bestLabel: sortedClassLabels[highestProbabilityIndex],
       bestLabelScore: predictions[highestProbabilityIndex],
-      allLabelsScores: zipArrays(classLabels, predictions),
+      allLabelsScores: zipArrays(sortedClassLabels, predictions),
     })
   }
 
